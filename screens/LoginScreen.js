@@ -86,6 +86,7 @@ export class LoginScreen extends Component {
           paddingTop: 200
         }}
       >
+        <Text style={{ textAlign: "center", fontSize: 35}}>Service Provider</Text>
         <View style={{ flex: 1, width: 300, height: 50, paddingBottom: 50 }}>
           <Text
             style={{ textAlign: "center", fontSize: 25, paddingBottom: 20 }}
