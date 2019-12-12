@@ -38,7 +38,7 @@ export class RegisterScreen extends Component {
         console.log("Role Name ===>", roles[i].name);
         console.log("Role ID ===>", roles[i].id);
 
-        if (roles[i].name === "User") {
+        if (roles[i].name === "NGO") {
           this.setState(
             {
               role: roles[i].id
@@ -128,6 +128,7 @@ export class RegisterScreen extends Component {
           paddingTop: 200
         }}
       >
+	<Text style={{ textAlign: "center", fontSize: 35}}>Service Provider</Text>
         {loading == true && <ActivityIndicator size="large" color="#0000ff" />}
         <View style={{ flex: 1, width: 300, height: 50, paddingBottom: 50 }}>
           <Text
