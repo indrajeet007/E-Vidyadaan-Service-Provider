@@ -6,19 +6,38 @@ import {
   AsyncStorage,
   ActivityIndicator
 } from "react-native";
-import { Input, Button } from "react-native-elements";
+import { ThemeProvider, Input, Button, Card } from "react-native-elements";
 import { registerUser, userRoles, editUser } from "../services/User.service";
 import { decodeJWT, setToStore } from "../util/Token.util";
+import styles from '../util/styles'
 
 
 export class RegisterScreen extends Component {
+  static navigationOptions = {
+    title: "Register",
+    headerTintColor:"#fff",
+    headerStyle:{
+      backgroundColor:"#673ab7"
+    },
+  }
+
   state = {
+    fullName:"",
     email: "",
+    phno: "",
+    address: "",
     password: "",
+    passwordConfirmation: "",
     error: "",
     user: {},
+    role: "",
     loading: false,
-    role: ""
+    isNameValid: true,
+    isEmailValid: true,
+    isPhnoValid: true,
+    isAddressValid: true,
+    isPasswordValid: true,
+    isConfirmationValid: true,
   };
 
   constructor(props) {
@@ -38,7 +57,7 @@ export class RegisterScreen extends Component {
         console.log("Role Name ===>", roles[i].name);
         console.log("Role ID ===>", roles[i].id);
 
-        if (roles[i].name === "NGO") {
+        if (roles[i].name === "User") {
           this.setState(
             {
               role: roles[i].id
@@ -51,20 +70,47 @@ export class RegisterScreen extends Component {
     });
   }
 
+  _handleFullNameChange = fullName => {
+    this.setState({ fullName: fullName });
+  };
+
   _handleEmailChange = email => {
     this.setState({ email: email });
+  };
+
+  _handlePhnoChange = phno => {
+    this.setState({ phno: phno });
+  };
+
+  _handleAddressChange = address => {
+    this.setState({ address: address });
   };
 
   _handlePasswordChange = password => {
     this.setState({ password: password });
   };
 
+  _handlePasswordConfirmationChange = passwordConfirmation => {
+    this.setState({ passwordConfirmation: passwordConfirmation });
+  };
+
   _RegisterUser = async () => {
     const { navigation } = this.props;
+    
+    this.setState({
+      isNameValid:this.state.fullName.length>0 || this.nameInput.shake(),
+      isEmailValid: this.state.email.length > 0 || this.emailInput.shake(),
+      isPhnoValid: this.state.phno.length === 10 || this.phnoInput.shake(),
+      isAddressValid: this.state.address.length > 0 || this.addressInput.shake(),
+      isPasswordValid: this.state.password.length >= 6 || this.passwordInput.shake(),
+      isConfirmationValid: this.state.password === this.state.passwordConfirmation || this.confirmationInput.shake(),
+    })
+
     const userData = {
       email: this.state.email,
       password: this.state.password,
-      username: this.state.email.replace(/@[^@]+$/, "")
+      //username: this.state.email.replace(/@[^@]+$/, "")
+      username: this.state.fullName
     };
 
     console.log("userData: ", userData);
@@ -116,51 +162,153 @@ export class RegisterScreen extends Component {
   };
 
   render() {
-    const { error, loading } = this.state;
+    const { 
+      error, 
+      loading, 
+      isNameValid, 
+      isEmailValid,
+      isPhnoValid, 
+      isAddressValid, 
+      isPasswordValid, 
+      isConfirmationValid 
+    } = this.state;
+    const { containerRoot,inputContainer } = styles
+    const theme = {
+      colors:{
+        primary: "#673ab7",
+      },
+      Icon:{
+        size: 22,
+        color: "#333",
+      },
+    }
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "column",
-          justifyContent: "space-around",
-          alignItems: "center",
-          backgroundColor: "teal",
-          paddingTop: 200
-        }}
-      >
-	    <Text style={{ textAlign: "center", fontSize: 35}}>Service Provider</Text>
-        {loading == true && <ActivityIndicator size="large" color="#0000ff" />}
-        <View style={{ flex: 1, width: 300, height: 50, paddingBottom: 50 }}>
-          <Text
-            style={{ textAlign: "center", fontSize: 25, paddingBottom: 20 }}
-          >
-            Register
-          </Text>
-          <Input
-            onChangeText={this._handleEmailChange}
-            value={this.state.email}
-            label="Enter Email"
-            placeholder="email@address.com"
-            autoCapitalize="none"
-          />
-          <Input
-            onChangeText={this._handlePasswordChange}
-            value={this.state.password}
-            label="Enter Password"
-            placeholder="Password"
-            autoCapitalize="none"
-            secureTextEntry={true}
-          />
-        </View>
-        <View style={{ flex: 2, width: 150, height: 50 }}>
-          <Button onPress={() => this._RegisterUser()} title="Register" />
-        </View>
-        {error !== "" && (
-          <View style={{ flex: 2, width: 150, height: 50 }}>
-            <Text>{error}</Text>
+      <ThemeProvider theme = {theme}>
+        <View style={containerRoot}>
+          {loading == true && <ActivityIndicator size="large" color="#0000ff" />}
+          <Card title = "NGO Register" containerStyle = {{borderRadius: 6}}>
+            <Input
+              placeholder="Enter Full Name"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{name: 'person-outline'}}
+              onChangeText={this._handleFullNameChange}
+              value={this.state.fullName}
+              autoCapitalize="words"
+              ref={input => (this.nameInput = input)}
+              onSubmitEditing={() => this.emailInput.focus()}
+              errorMessage={
+                isNameValid
+                  ? null
+                  : 'Please enter name'
+              }
+            />
+            <Input
+              placeholder="Enter E-mail"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{name: 'mail'}}
+              onChangeText={this._handleEmailChange}
+              value={this.state.email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              ref={input => (this.emailInput = input)}
+              onSubmitEditing={() => this.phnoInput.focus()}
+              errorMessage={
+                isEmailValid ? null : 'Please enter a valid email address'
+              }
+            />
+            <Input
+              placeholder="Enter Phone No"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{name: 'smartphone'}}
+              onChangeText={this._handlePhnoChange}
+              value={this.state.phno}
+              autoCapitalize="none"
+              keyboardType="number-pad"
+              ref={input => (this.phnoInput = input)}
+              onSubmitEditing={() => this.addressInput.focus()}
+              errorMessage={
+                isPhnoValid ? null : 'Please enter a valid phone number'
+              }
+            />
+            <Input
+              placeholder="Enter Address"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{ name: 'address', type: 'entypo' }}
+              onChangeText={this._handleEmailChange}
+              value={this.state.email}
+              autoCapitalize="none"
+              keyboardType="default"
+              ref={input => (this.addressInput = input)}
+              onSubmitEditing={() => this.passwordInput.focus()}
+              errorMessage={
+                isAddressValid ? null : 'Please enter address'
+              }
+            />
+            <Input
+              placeholder="Enter Password"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{name: 'lock-outline'}}
+              onChangeText={this._handlePasswordChange}
+              value={this.state.password}
+              autoCapitalize="none"
+              secureTextEntry={true}
+              ref={input => (this.passwordInput = input)}
+              onSubmitEditing={() => this.confirmationInput.focus()}
+              errorMessage={
+                isPasswordValid
+                  ? null
+                  : 'Please enter at least 6 characters'
+              }
+            />
+            <Input
+              placeholder="Confirm Password"
+              inputContainerStyle={inputContainer}
+              leftIconContainerStyle={{
+                marginRight: 10,
+              }}
+              leftIcon={{name: 'lock-outline'}}
+              onChangeText={this._handlePasswordConfirmationChange}
+              value={this.state.passwordConfirmation}
+              autoCapitalize="none"
+              secureTextEntry={true}
+              blurOnSubmit={true}
+              returnKeyType="done"
+              ref={input => (this.confirmationInput = input)}
+              errorMessage={
+                isConfirmationValid
+                  ? null
+                  : 'Please enter the same password'
+              }
+            />
+          </Card>
+          <View style={{ flex: 2, alignItems: 'stretch',  margin: 20 }}>
+            <Button 
+              title="Register"
+              onPress={() => this._RegisterUser()} 
+            />
           </View>
-        )}
-      </View>
+          {error !== "" && (
+            <View style={{ flex: 2, width: 150, height: 50, alignSelf: 'center' }} >
+              <Text style={{alignSelf: 'center', color: 'red'}} > {error} </Text>
+            </View>
+          )}
+        </View>
+      </ThemeProvider>
     );
   }
 }
